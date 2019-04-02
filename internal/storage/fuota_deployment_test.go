@@ -116,6 +116,60 @@ func (ts *StorageTestSuite) TestFUOTADeployment() {
 			assert.Equal(spID, fuotaSPID)
 		})
 
+		t.Run("Get fuota deployments", func(t *testing.T) {
+			t.Run("No filters", func(t *testing.T) {
+				assert := require.New(t)
+
+				count, err := GetFUOTADeploymentCount(ts.tx, FUOTADeploymentFilters{})
+				assert.NoError(err)
+				assert.Equal(1, count)
+
+				items, err := GetFUOTADeployments(ts.tx, FUOTADeploymentFilters{Limit: 10})
+				assert.NoError(err)
+				assert.Len(items, 1)
+			})
+
+			t.Run("DevEUI filter", func(t *testing.T) {
+				assert := require.New(t)
+
+				count, err := GetFUOTADeploymentCount(ts.tx, FUOTADeploymentFilters{DevEUI: d.DevEUI})
+				assert.NoError(err)
+				assert.Equal(1, count)
+
+				count, err = GetFUOTADeploymentCount(ts.tx, FUOTADeploymentFilters{DevEUI: lorawan.EUI64{1, 2, 1, 2, 1, 2, 1, 2}})
+				assert.NoError(err)
+				assert.Equal(0, count)
+
+				items, err := GetFUOTADeployments(ts.tx, FUOTADeploymentFilters{Limit: 10, DevEUI: d.DevEUI})
+				assert.NoError(err)
+				assert.Len(items, 1)
+
+				items, err = GetFUOTADeployments(ts.tx, FUOTADeploymentFilters{Limit: 10, DevEUI: lorawan.EUI64{1, 2, 1, 2, 1, 2, 1, 2}})
+				assert.NoError(err)
+				assert.Len(items, 0)
+			})
+
+			t.Run("ApplicationID filter", func(t *testing.T) {
+				assert := require.New(t)
+
+				count, err := GetFUOTADeploymentCount(ts.tx, FUOTADeploymentFilters{ApplicationID: d.ApplicationID})
+				assert.NoError(err)
+				assert.Equal(1, count)
+
+				count, err = GetFUOTADeploymentCount(ts.tx, FUOTADeploymentFilters{ApplicationID: d.ApplicationID + 1})
+				assert.NoError(err)
+				assert.Equal(0, count)
+
+				items, err := GetFUOTADeployments(ts.tx, FUOTADeploymentFilters{Limit: 10, ApplicationID: d.ApplicationID})
+				assert.NoError(err)
+				assert.Len(items, 1)
+
+				items, err = GetFUOTADeployments(ts.tx, FUOTADeploymentFilters{Limit: 10, ApplicationID: d.ApplicationID + 1})
+				assert.NoError(err)
+				assert.Len(items, 0)
+			})
+		})
+
 		t.Run("Get pending fuota deployments", func(t *testing.T) {
 			assert := require.New(t)
 

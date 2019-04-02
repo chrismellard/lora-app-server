@@ -42,7 +42,7 @@ func (x RXWindow) String() string {
 	return proto.EnumName(RXWindow_name, int32(x))
 }
 func (RXWindow) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_common_244c5cf40c0db15f, []int{0}
+	return fileDescriptor_common_49384e43534a3ff4, []int{0}
 }
 
 type UplinkFrameLog struct {
@@ -61,7 +61,7 @@ func (m *UplinkFrameLog) Reset()         { *m = UplinkFrameLog{} }
 func (m *UplinkFrameLog) String() string { return proto.CompactTextString(m) }
 func (*UplinkFrameLog) ProtoMessage()    {}
 func (*UplinkFrameLog) Descriptor() ([]byte, []int) {
-	return fileDescriptor_common_244c5cf40c0db15f, []int{0}
+	return fileDescriptor_common_49384e43534a3ff4, []int{0}
 }
 func (m *UplinkFrameLog) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_UplinkFrameLog.Unmarshal(m, b)
@@ -116,7 +116,7 @@ func (m *DownlinkFrameLog) Reset()         { *m = DownlinkFrameLog{} }
 func (m *DownlinkFrameLog) String() string { return proto.CompactTextString(m) }
 func (*DownlinkFrameLog) ProtoMessage()    {}
 func (*DownlinkFrameLog) Descriptor() ([]byte, []int) {
-	return fileDescriptor_common_244c5cf40c0db15f, []int{1}
+	return fileDescriptor_common_49384e43534a3ff4, []int{1}
 }
 func (m *DownlinkFrameLog) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_DownlinkFrameLog.Unmarshal(m, b)
@@ -193,7 +193,7 @@ func (m *UplinkRXInfo) Reset()         { *m = UplinkRXInfo{} }
 func (m *UplinkRXInfo) String() string { return proto.CompactTextString(m) }
 func (*UplinkRXInfo) ProtoMessage()    {}
 func (*UplinkRXInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_common_244c5cf40c0db15f, []int{2}
+	return fileDescriptor_common_49384e43534a3ff4, []int{2}
 }
 func (m *UplinkRXInfo) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_UplinkRXInfo.Unmarshal(m, b)
@@ -427,7 +427,7 @@ func (m *EncryptedFineTimestamp) Reset()         { *m = EncryptedFineTimestamp{}
 func (m *EncryptedFineTimestamp) String() string { return proto.CompactTextString(m) }
 func (*EncryptedFineTimestamp) ProtoMessage()    {}
 func (*EncryptedFineTimestamp) Descriptor() ([]byte, []int) {
-	return fileDescriptor_common_244c5cf40c0db15f, []int{3}
+	return fileDescriptor_common_49384e43534a3ff4, []int{3}
 }
 func (m *EncryptedFineTimestamp) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_EncryptedFineTimestamp.Unmarshal(m, b)
@@ -501,7 +501,7 @@ func (m *DownlinkTXInfo) Reset()         { *m = DownlinkTXInfo{} }
 func (m *DownlinkTXInfo) String() string { return proto.CompactTextString(m) }
 func (*DownlinkTXInfo) ProtoMessage()    {}
 func (*DownlinkTXInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_common_244c5cf40c0db15f, []int{4}
+	return fileDescriptor_common_49384e43534a3ff4, []int{4}
 }
 func (m *DownlinkTXInfo) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_DownlinkTXInfo.Unmarshal(m, b)
@@ -704,9 +704,9 @@ func init() {
 	proto.RegisterEnum("api.RXWindow", RXWindow_name, RXWindow_value)
 }
 
-func init() { proto.RegisterFile("common.proto", fileDescriptor_common_244c5cf40c0db15f) }
+func init() { proto.RegisterFile("common.proto", fileDescriptor_common_49384e43534a3ff4) }
 
-var fileDescriptor_common_244c5cf40c0db15f = []byte{
+var fileDescriptor_common_49384e43534a3ff4 = []byte{
 	// 795 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xbc, 0x54, 0x51, 0x73, 0xda, 0x46,
 	0x10, 0x8e, 0x82, 0x31, 0xb0, 0x02, 0x0a, 0xe7, 0xd4, 0x55, 0xa8, 0xdb, 0x52, 0x9e, 0x68, 0x26,

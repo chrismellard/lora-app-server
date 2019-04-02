@@ -2,6 +2,7 @@ package storage
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	uuid "github.com/gofrs/uuid"
@@ -70,7 +71,17 @@ type FUOTADeployment struct {
 	NextStepAfter       time.Time                `db:"next_step_after"`
 }
 
-// FUOTADeploymentDevice defiles the device record of a FUOTA deployment.
+// FUOTADeploymentListItem defines a FUOTA deployment item for listing.
+type FUOTADeploymentListItem struct {
+	ID            uuid.UUID            `db:"id"`
+	CreatedAt     time.Time            `db:"created_at"`
+	UpdatedAt     time.Time            `db:"updated_at"`
+	Name          string               `db:"name"`
+	State         FUOTADeploymentState `db:"state"`
+	NextStepAfter time.Time            `db:"next_step_after"`
+}
+
+// FUOTADeploymentDevice defines the device record of a FUOTA deployment.
 type FUOTADeploymentDevice struct {
 	FUOTADeploymentID uuid.UUID                  `db:"fuota_deployment_id"`
 	DevEUI            lorawan.EUI64              `db:"dev_eui"`
@@ -89,6 +100,38 @@ type FUOTADeploymentDeviceListItem struct {
 	DeviceName        string                     `db:"device_name"`
 	State             FUOTADeploymentDeviceState `db:"state"`
 	ErrorMessage      string                     `db:"error_message"`
+}
+
+// FUOTADeploymentFilter provides filters that can be used to filter on
+// FUOTA deployments. Note that empty values are not used as filters.
+type FUOTADeploymentFilters struct {
+	DevEUI        lorawan.EUI64 `db:"dev_eui"`
+	ApplicationID int64         `db:"application_id"`
+
+	// Limit and Offset are added for convenience so that this struct can
+	// be given as the arguments.
+	Limit  int `db:"limit"`
+	Offset int `db:"offset"`
+}
+
+// SQL returns the SQL filter.
+func (f FUOTADeploymentFilters) SQL() string {
+	var filters []string
+	var nullDevEUI lorawan.EUI64
+
+	if f.DevEUI != nullDevEUI {
+		filters = append(filters, "fdd.dev_eui = :dev_eui")
+	}
+
+	if f.ApplicationID != 0 {
+		filters = append(filters, "d.application_id = :application_id")
+	}
+
+	if len(filters) == 0 {
+		return ""
+	}
+
+	return "where " + strings.Join(filters, " and ")
 }
 
 // CreateFUOTADeploymentForDevice creates and initializes a FUOTA deployment
@@ -336,6 +379,94 @@ func UpdateFUOTADeployment(db sqlx.Ext, fd *FUOTADeployment) error {
 	}).Info("fuota deployment updated")
 
 	return nil
+}
+
+// GetFUOTADeploymentCount returns the number of FUOTA deployments.
+func GetFUOTADeploymentCount(db sqlx.Queryer, filters FUOTADeploymentFilters) (int, error) {
+	query, args, err := sqlx.BindNamed(sqlx.DOLLAR, `
+		select
+			count(distinct fd.*)
+		from
+			fuota_deployment fd
+		inner join
+			fuota_deployment_device fdd
+		on
+			fd.id = fdd.fuota_deployment_id
+		inner join
+			device d
+		on
+			fdd.dev_eui = d.dev_eui
+	`+filters.SQL(), filters)
+	if err != nil {
+		return 0, errors.Wrap(err, "named query error")
+	}
+
+	var count int
+	err = sqlx.Get(db, &count, query, args...)
+	if err != nil {
+		return 0, handlePSQLError(Select, err, "select error")
+	}
+
+	return count, nil
+}
+
+// GetFUOTADeployments returns a slice of fuota deployments.
+func GetFUOTADeployments(db sqlx.Queryer, filters FUOTADeploymentFilters) ([]FUOTADeploymentListItem, error) {
+	query, args, err := sqlx.BindNamed(sqlx.DOLLAR, `
+		select
+			distinct fd.id,
+			fd.created_at,
+			fd.updated_at,
+			fd.name,
+			fd.state,
+			fd.next_step_after
+		from
+			fuota_deployment fd
+		inner join
+			fuota_deployment_device fdd
+		on
+			fd.id = fdd.fuota_deployment_id
+		inner join
+			device d
+		on
+			fdd.dev_eui = d.dev_eui
+	`+filters.SQL()+`
+	order by
+		fd.created_at desc
+	limit :limit
+	offset :offset
+	`, filters)
+	if err != nil {
+		return nil, errors.Wrap(err, "named query error")
+	}
+
+	var items []FUOTADeploymentListItem
+	if err = sqlx.Select(db, &items, query, args...); err != nil {
+		return nil, handlePSQLError(Select, err, "select error")
+	}
+
+	return items, nil
+}
+
+// GetFUOTADeploymentDevice returns the FUOTA deployment record for the given
+// device.
+func GetFUOTADeploymentDevice(db sqlx.Queryer, fuotaDeploymentID uuid.UUID, devEUI lorawan.EUI64) (FUOTADeploymentDevice, error) {
+	var out FUOTADeploymentDevice
+	err := sqlx.Get(db, &out, `
+		select
+			*
+		from
+			fuota_deployment_device
+		where
+			fuota_deployment_id = $1
+			and dev_eui = $2`,
+		fuotaDeploymentID,
+		devEUI,
+	)
+	if err != nil {
+		return out, handlePSQLError(Select, err, "select error")
+	}
+	return out, nil
 }
 
 // GetPendingFUOTADeploymentDevice returns the pending FUOTA deployment record
