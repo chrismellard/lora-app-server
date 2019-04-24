@@ -210,6 +210,7 @@ func (a *ApplicationServerAPI) HandleUplinkData(ctx context.Context, req *as.Han
 	var object interface{}
 	codecPL := codec.NewPayload(app.PayloadCodec, uint8(req.FPort), app.PayloadEncoderScript, app.PayloadDecoderScript)
 	if codecPL != nil {
+		start := time.Now()
 		if err := codecPL.DecodeBytes(b); err != nil {
 			log.WithFields(log.Fields{
 				"codec":          app.PayloadCodec,
@@ -240,6 +241,11 @@ func (a *ApplicationServerAPI) HandleUplinkData(ctx context.Context, req *as.Han
 				log.WithError(err).Error("send error notification to integration error")
 			}
 		} else {
+			log.WithFields(log.Fields{
+				"application_id": app.ID,
+				"codec":          app.PayloadCodec,
+				"duration":       time.Since(start),
+			}).Debug("payload codec completed Decode execution")
 			object = codecPL.Object()
 		}
 	}
