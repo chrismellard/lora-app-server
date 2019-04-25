@@ -294,7 +294,67 @@ func (f *FUOTADeploymentAPI) GetDeploymentDevice(ctx context.Context, req *api.G
 
 // ListDevices lists the devices (and status) for the given fuota deployment ID.
 func (f *FUOTADeploymentAPI) ListDeploymentDevices(ctx context.Context, req *api.ListFUOTADeploymentDevicesRequest) (*api.ListFUOTADeploymentDevicesResponse, error) {
-	panic("not implemented")
+	fuotaDeploymentID, err := uuid.FromString(req.FuotaDeploymentId)
+	if err != nil {
+		return nil, grpc.Errorf(codes.InvalidArgument, "fuota_deployment_id %s", err)
+	}
+
+	err = f.validator.Validate(ctx,
+		auth.ValidateFUOTADeploymentAccess(auth.Read, fuotaDeploymentID),
+	)
+	if err != nil {
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+
+	count, err := storage.GetFUOTADeploymentDeviceCount(storage.DB(), fuotaDeploymentID)
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	devices, err := storage.GetFUOTADeploymentDevices(storage.DB(), fuotaDeploymentID, int(req.Limit), int(req.Offset))
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	out := api.ListFUOTADeploymentDevicesResponse{
+		TotalCount: int64(count),
+		Result:     make([]*api.FUOTADeploymentDeviceListItem, len(devices)),
+	}
+
+	for i := range devices {
+		var err error
+
+		dd := api.FUOTADeploymentDeviceListItem{
+			DevEui:       devices[i].DevEUI.String(),
+			DeviceName:   devices[i].DeviceName,
+			ErrorMessage: devices[i].ErrorMessage,
+		}
+
+		switch devices[i].State {
+		case storage.FUOTADeploymentDevicePending:
+			dd.State = api.FUOTADeploymentDeviceState_PENDING
+		case storage.FUOTADeploymentDeviceSuccess:
+			dd.State = api.FUOTADeploymentDeviceState_SUCCESS
+		case storage.FUOTADeploymentDeviceError:
+			dd.State = api.FUOTADeploymentDeviceState_ERROR
+		default:
+			return nil, grpc.Errorf(codes.Internal, "unexpected state: %s", devices[i].State)
+		}
+
+		dd.CreatedAt, err = ptypes.TimestampProto(devices[i].CreatedAt)
+		if err != nil {
+			return nil, helpers.ErrToRPCError(err)
+		}
+
+		dd.UpdatedAt, err = ptypes.TimestampProto(devices[i].UpdatedAt)
+		if err != nil {
+			return nil, helpers.ErrToRPCError(err)
+		}
+
+		out.Result[i] = &dd
+	}
+
+	return &out, nil
 }
 
 func (f *FUOTADeploymentAPI) returnList(count int, deployments []storage.FUOTADeploymentListItem) (*api.ListFUOTADeploymentResponse, error) {

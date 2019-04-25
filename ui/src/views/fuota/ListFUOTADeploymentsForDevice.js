@@ -64,10 +64,11 @@ class ListFUOTADeploymentsForDevice extends Component {
 
     return(
       <TableRow key={obj.id}>
-        <TableCellLink onClick={() => this.showDetails(obj.id)}>{obj.name}</TableCellLink>
+        <TableCellLink to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/fuota-deployments/${obj.id}`}>{obj.name}</TableCellLink>
         <TableCell>{createdAt}</TableCell>
         <TableCell>{updatedAt}</TableCell>
         <TableCell>{obj.state}</TableCell>
+        <TableCell><Button size="small" onClick={() => this.showDetails(obj.id)}>Show</Button></TableCell>
       </TableRow>
     );
   }
@@ -100,7 +101,7 @@ class ListFUOTADeploymentsForDevice extends Component {
           open={this.state.detailDialog}
           onClose={this.onCloseDialog}
         >
-          <DialogTitle>Device deployment status</DialogTitle>
+          <DialogTitle>Job status for device</DialogTitle>
           <DialogContent>
             <Table>
               <TableBody>
@@ -120,7 +121,6 @@ class ListFUOTADeploymentsForDevice extends Component {
             </Table>
           </DialogContent>
           <DialogActions>
-            <Button color="primary" component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/fuota-deployments/${this.state.fuotaDeploymentID}`} onClick={this.closeDialog}>Goto deployment</Button>
             <Button color="primary" onClick={this.onCloseDialog}>Dismiss</Button>
           </DialogActions>
         </Dialog>}
@@ -129,7 +129,7 @@ class ListFUOTADeploymentsForDevice extends Component {
           <Grid item xs={12} className={this.props.classes.buttons}>
             <Button variant="outlined" className={this.props.classes.button} component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/devices/${this.props.match.params.devEUI}/fuota-deployments/create`}>
               <CloudUpload className={this.props.classes.icon} />
-              Create FUOTA Deployment
+              Create Firmware Update Job
             </Button>
           </Grid>
         </Admin>
@@ -138,10 +138,11 @@ class ListFUOTADeploymentsForDevice extends Component {
           <DataTable
             header={
               <TableRow>
-                <TableCell>Name</TableCell>
+                <TableCell>Job name</TableCell>
                 <TableCell>Created at</TableCell>
                 <TableCell>Updated at</TableCell>
-                <TableCell>State</TableCell>
+                <TableCell>Job state</TableCell>
+                <TableCell>Device state</TableCell>
               </TableRow>
             }
             getPage={this.getPage}

@@ -95,8 +95,8 @@ class FUOTADeploymentForm extends FormComponent {
       >
         <TextField
           id="name"
-          label="FUOTA deployment name"
-          helperText="A descriptive name for this deployment."
+          label="Firmware update job-name"
+          helperText="A descriptive name for this firmware update job."
           margin="normal"
           value={this.state.object.name || ""}
           onChange={this.onChange}

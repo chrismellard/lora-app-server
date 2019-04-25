@@ -54,6 +54,17 @@ class FUOTADeploymentStore extends EventEmitter {
     });
   }
 
+  listDeploymentDevices(filters, callbackFunc) {
+    this.swagger.then(client => {
+      client.apis.FUOTADeploymentService.ListDeploymentDevices(filters)
+        .then(checkStatus)
+        .then(resp => {
+          callbackFunc(resp.obj);
+        })
+        .catch(errorHandler);
+    });
+  }
+
   getDeploymentDevice(fuotaDeploymentID, devEUI, callbackFunc) {
     this.swagger.then(client => {
       client.apis.FUOTADeploymentService.GetDeploymentDevice({
@@ -78,6 +89,9 @@ class FUOTADeploymentStore extends EventEmitter {
     });
   }
 
+  emitReload() {
+    this.emit("reload");
+  }
 }
 
 const fuotaDeploymentStore = new FUOTADeploymentStore();

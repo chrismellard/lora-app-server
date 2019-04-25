@@ -1,18 +1,14 @@
 import React, { Component } from "react";
-import { Link } from "react-router-dom";
 
 import { withStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
 import TableCell from "@material-ui/core/TableCell";
 import TableRow from "@material-ui/core/TableRow";
-import Button from '@material-ui/core/Button';
 
 import moment from "moment";
-import CloudUpload from "mdi-material-ui/CloudUpload";
 
 import TableCellLink from "../../components/TableCellLink";
 import DataTable from "../../components/DataTable";
-import Admin from "../../components/Admin";
 import FUOTADeploymentStore from "../../stores/FUOTADeploymentStore";
 import theme from "../../theme";
 
@@ -65,15 +61,6 @@ class ListFUOTADeploymentsForApplication extends Component {
   render() {
     return(
       <Grid container spacing={24}>
-        <Admin organizationID={this.props.match.params.organizationID}>
-          <Grid item xs={12} className={this.props.classes.buttons}>
-            <Button variant="outlined" className={this.props.classes.button} component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/fuota-deployments/create`}>
-              <CloudUpload className={this.props.classes.icon} />
-              Create FUOTA Deployment
-            </Button>
-          </Grid>
-        </Admin>
-
         <Grid item xs={12}>
           <DataTable
             header={
