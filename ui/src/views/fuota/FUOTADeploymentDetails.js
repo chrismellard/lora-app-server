@@ -5,6 +5,7 @@ import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
 import CardContent from "@material-ui/core/CardContent";
 import LinearProgress from '@material-ui/core/LinearProgress';
+import Typography from "@material-ui/core/Typography";
 
 import TableCell from "@material-ui/core/TableCell";
 import TableRow from "@material-ui/core/TableRow";
@@ -22,6 +23,7 @@ class FUOTADeploymentDetails extends Component {
 
     this.state = {
         progress: 0,
+        stepProgress: 0,
         lastReload: 0,
     };
   }
@@ -48,8 +50,8 @@ class FUOTADeploymentDetails extends Component {
     const now = moment().unix();
 
     const span = nextStepAfter - start;
-    const progress = now - start;
-    const progressScaled = progress / span * 100;
+    const stepProgress = now - start;
+    const progressScaled = stepProgress / span * 100;
 
     if (progressScaled > 100) {
       if (moment().unix() - this.state.lastReload > 5) {
@@ -59,8 +61,42 @@ class FUOTADeploymentDetails extends Component {
       }
     }
 
+    const states = 8;
+    let state = 0;
+
+    switch(this.props.fuotaDeployment.fuotaDeployment.state) {
+      case "MC_CREATE":
+        state = 0;
+        break;
+      case "MC_SETUP":
+        state = 1;
+        break;
+      case "FRAG_SESS_SETUP":
+        state = 2;
+        break;
+      case "MC_SESS_C_SETUP":
+        state = 3;
+        break;
+      case "ENQUEUE":
+        state = 4;
+        break;
+      case "STATUS_REQUEST":
+        state = 5;
+        break;
+      case "SET_DEVICE_STATUS":
+        state = 6;
+        break;
+      case "CLEANUP":
+        state = 7;
+        break;
+      case "DONE":
+        state = 8;
+        break;
+    }
+
     this.setState({
-      progress: progressScaled,
+      stepProgress: progressScaled,
+      progress: state / states * 100,
     });
   }
 
@@ -141,11 +177,18 @@ class FUOTADeploymentDetails extends Component {
                 </TableBody>
               </Table>
             </CardContent>
-            <CardContent>
-              {this.props.fuotaDeployment.fuotaDeployment.state !== "DONE" && <div>
-                <LinearProgress variant="determinate" value={this.state.progress} />
-              </div>}
-            </CardContent>
+            {this.props.fuotaDeployment.fuotaDeployment.state !== "DONE" && <CardContent>
+              <Typography variant="subtitle2" gutterBottom>
+                Job progress:
+              </Typography>
+              <LinearProgress variant="determinate" value={this.state.progress} />
+            </CardContent>}
+            {this.props.fuotaDeployment.fuotaDeployment.state !== "DONE" && <CardContent>
+              <Typography variant="subtitle2" gutterBottom>
+                State progress:
+              </Typography>
+                <LinearProgress variant="determinate" value={this.state.stepProgress} />
+            </CardContent>}
           </Card>
         </Grid>
       </Grid>
