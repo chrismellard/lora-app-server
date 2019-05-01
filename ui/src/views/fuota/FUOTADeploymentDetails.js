@@ -92,6 +92,9 @@ class FUOTADeploymentDetails extends Component {
       case "DONE":
         state = 8;
         break;
+      default:
+        state = 0;
+        break;
     }
 
     this.setState({
