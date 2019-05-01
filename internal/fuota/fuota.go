@@ -399,7 +399,6 @@ func stepEnqueue(db sqlx.Ext, item storage.FUOTADeployment) error {
 
 	// fragment the payload
 	padding := (item.FragSize - (len(item.Payload) % item.FragSize)) % item.FragSize
-	fmt.Printf("Pay len: %d, padding: %d\n", len(item.Payload), padding)
 	fragments, err := fragmentation.Encode(append(item.Payload, make([]byte, padding)...), item.FragSize, item.Redundancy)
 	if err != nil {
 		return errors.Wrap(err, "fragment payload error")
