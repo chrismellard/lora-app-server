@@ -552,7 +552,7 @@ func (a *DeviceAPI) Activate(ctx context.Context, req *pb.ActivateDeviceRequest)
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	dp, err := storage.GetDeviceProfile(storage.DB(), d.DeviceProfileID)
+	dp, err := storage.GetDeviceProfile(storage.DB(), d.DeviceProfileID, false, false)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -910,7 +910,6 @@ func convertUplinkAndDownlinkFrames(up *gw.UplinkFrameSet, down *gw.DownlinkFram
 				GatewayId:         mac.String(),
 				Time:              rxInfo.Time,
 				TimeSinceGpsEpoch: rxInfo.TimeSinceGpsEpoch,
-				Timestamp:         rxInfo.Timestamp,
 				Rssi:              rxInfo.Rssi,
 				LoraSnr:           rxInfo.LoraSnr,
 				Channel:           rxInfo.Channel,
@@ -919,6 +918,7 @@ func convertUplinkAndDownlinkFrames(up *gw.UplinkFrameSet, down *gw.DownlinkFram
 				Antenna:           rxInfo.Antenna,
 				Location:          rxInfo.Location,
 				FineTimestampType: rxInfo.FineTimestampType,
+				Context:           rxInfo.Context,
 			}
 
 			switch rxInfo.FineTimestampType {
@@ -958,15 +958,14 @@ func convertUplinkAndDownlinkFrames(up *gw.UplinkFrameSet, down *gw.DownlinkFram
 			copy(mac[:], down.TxInfo.GatewayId[:])
 
 			downlinkFrameLog.TxInfo = &pb.DownlinkTXInfo{
-				GatewayId:         mac.String(),
-				Immediately:       down.TxInfo.Immediately,
-				TimeSinceGpsEpoch: down.TxInfo.TimeSinceGpsEpoch,
-				Timestamp:         down.TxInfo.Timestamp,
-				Frequency:         down.TxInfo.Frequency,
-				Power:             down.TxInfo.Power,
-				Modulation:        down.TxInfo.Modulation,
-				Board:             down.TxInfo.Board,
-				Antenna:           down.TxInfo.Antenna,
+				GatewayId:  mac.String(),
+				Frequency:  down.TxInfo.Frequency,
+				Power:      down.TxInfo.Power,
+				Modulation: down.TxInfo.Modulation,
+				Board:      down.TxInfo.Board,
+				Antenna:    down.TxInfo.Antenna,
+				Timing:     down.TxInfo.Timing,
+				Context:    down.TxInfo.Context,
 			}
 
 			if lora := down.TxInfo.GetLoraModulationInfo(); lora != nil {
@@ -978,6 +977,24 @@ func convertUplinkAndDownlinkFrames(up *gw.UplinkFrameSet, down *gw.DownlinkFram
 			if fsk := down.TxInfo.GetFskModulationInfo(); fsk != nil {
 				downlinkFrameLog.TxInfo.ModulationInfo = &pb.DownlinkTXInfo_FskModulationInfo{
 					FskModulationInfo: fsk,
+				}
+			}
+
+			if ti := down.TxInfo.GetImmediatelyTimingInfo(); ti != nil {
+				downlinkFrameLog.TxInfo.TimingInfo = &pb.DownlinkTXInfo_ImmediatelyTimingInfo{
+					ImmediatelyTimingInfo: ti,
+				}
+			}
+
+			if ti := down.TxInfo.GetDelayTimingInfo(); ti != nil {
+				downlinkFrameLog.TxInfo.TimingInfo = &pb.DownlinkTXInfo_DelayTimingInfo{
+					DelayTimingInfo: ti,
+				}
+			}
+
+			if ti := down.TxInfo.GetGpsEpochTimingInfo(); ti != nil {
+				downlinkFrameLog.TxInfo.TimingInfo = &pb.DownlinkTXInfo_GpsEpochTimingInfo{
+					GpsEpochTimingInfo: ti,
 				}
 			}
 		}
